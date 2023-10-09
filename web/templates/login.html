@@ -1,0 +1,82 @@
+
+{% extends 'layout/basic.html' %}
+
+{% block css %}
+    <style>
+    .error-msg{
+        color: red;
+        position: absolute;
+    }
+    .account{
+        margin-left: 30%;
+        width: 500px;
+        padding: 10px;
+    }
+    .boxborder{
+        border: 1px solid black;
+    }
+    </style>
+{% endblock %} css %}
+
+{% block ccontent %}
+<div class="account boxborder" >
+        <div class="form-group">用户登录</div>
+        <form id="smsForm" method="POST" novalidate>
+            {% csrf_token %}
+            {% for field in form %}
+                {% if field.name == 'code' %}
+                    <div class="form-group">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        <div class="row">
+                            <div class="col-xs-7">
+                                {{ field }}
+                                <span class="error-msg">{{ field.errors.0 }}</span>
+                            </div>
+                            <div class="col-xs-5">
+                                <img src="{% url 'web:image_code' %}" id = 'imageCode' title="刷新验证码">
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="form-group">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        <span class="error-msg">{{ field.errors.0 }}</span>
+                    </div>
+                {% endif %}
+            {% endfor %}
+            <div>
+                <div style="float: right">
+                        <a href="{% url 'web:login_sms' %}">验证码登录</a>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-xs-3">
+                    <input  type="submit" class="btn btn-primary" value="login"/>
+                </div>
+            </div>
+        </form>
+    </div>
+
+{% endblock  %}
+
+{% block js %}
+    <script>
+        window.onload = function ()
+        {
+            Refresh();
+        }
+
+       function Refresh(){
+             let imagecode=document.getElementById('imageCode');
+             imagecode.onclick =function (){
+                 let oldsrc= this.getAttribute('src');
+                 this.src = oldsrc + '?' +new Date().getTime()
+             }
+            }
+
+    </script>
+{% endblock %}
+
+

@@ -1,0 +1,26 @@
+#pycharm
+.ideal/
+.DS_Store
+
+__pycache__
+*.py[cod]
+*$py.class
+
+
+#Django stuff
+local_settings.py
+*.sqlite3
+
+
+#database migrations
+*/migrations/*.py
+!*/migrations/__init__.py
+
+#忽略script
+script
+
+#忽略课件
+课件
+
+#忽略vscode 配置文件
+.vscode

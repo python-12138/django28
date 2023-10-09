@@ -1,0 +1,113 @@
+{% extends 'layout/manage.html' %}
+
+
+{% block css %}
+    <style>
+        .panel-body {
+            padding: 0;
+        }
+
+        .panel-default .panel-heading {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+        }
+
+
+        .panel-default {
+            padding-top: 10px;
+        }
+
+        .title-list {
+            border-right: 1px solid gray;
+            min-height: 500px;
+        }
+
+        .content {
+            border-left: 1px solid gray;
+            min-height: 600px;
+            margin-left: -1px;
+        }
+
+    </style>
+{% endblock %}
+{% block ccontent %}
+    <div class="container-fluid">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <div>
+                    <i class="fa fa-list" aria-hidden="true"></i> wiki文档
+                </div>
+
+                <div class="function">
+                    <a type="button" class="btn btn-success btn-xs"
+                       href="{% url 'web:wiki_add' request.tracer.project.id %}">
+                        <i class="fa fa-plus-circle" aria-hidden="true"></i>新建
+                    </a>
+
+                </div>
+            </div>
+            <div class="panel-body">
+
+                <div class="col-lg-3 title-list">目录
+                    <ul id="catalog">
+
+                    </ul>
+
+                </div>
+                <div class="col-lg-9 content">
+                    <form method="post">
+                        {% csrf_token %}
+                        {% for field in form %}
+                            <div class="form-group">
+                                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                {{ field }}
+                                <span class="error-msg">{{ field.errors.0 }}</span>
+                            </div>
+
+                        {% endfor %}
+                        <button type="submit" class="btn btn-primary">提 交</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block js %}
+    <script>
+        let WIKI_DETAIL_URL = "{% url 'web:wiki' request.tracer.project.id %}"
+        $(function () {
+            console.log(123)
+            initCatalog();
+        });
+
+        function initCatalog() {
+            $.ajax({
+
+                url: '{% url "web:wiki_catalog" request.tracer.project.id %}',
+                type: 'GET',
+                dataType: 'JSON',
+                success: function (res) {
+                    if (res.status) {
+                        $.each(res.data, function (index, item) {
+                            //console.log(index,item)
+                            let href = WIKI_DETAIL_URL + "?wiki_id=" + item.id;
+                            let li = $("<li>").attr('id', 'id_' + item.id).append($("<a>").text(item.title).attr('href', href)).append($('<ul>'));
+                            if (!item.parent_id) {
+                                $('#catalog').append(li)
+                            } else {
+                                $('#' + 'id_' + item.parent_id).children().append(li)
+                            }
+                        })
+
+                    } else {
+                        alert('初始化失败')
+                    }
+                }
+            })
+        }
+
+    </script>
+{% endblock %}

@@ -1,0 +1,252 @@
+{% extends 'layout/manage.html' %}
+{% load static %}
+
+{% block css %}
+
+    <link rel="stylesheet" href="{% static 'plugin/editor-md/css/editormd.min.css' %}">
+
+    <style>
+
+        .panel-body {
+            padding: 0;
+        }
+
+        .panel-default .panel-heading {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+        }
+
+
+        .panel-default {
+            padding-top: 10px;
+        }
+
+        .title-list {
+            border-right: 1px solid gray;
+            min-height: 500px;
+        }
+
+        .content {
+            border-left: 1px solid gray;
+            min-height: 600px;
+            margin-left: -1px;
+        }
+
+
+        .editormd-fullscreen {
+            z-index: 100000;
+        }
+
+    </style>
+{% endblock %}
+{% block ccontent %}
+    <div class="container-fluid">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <div>
+                    <i class="fa fa-list" aria-hidden="true"></i> wiki文档
+                </div>
+
+                <div class="function">
+                    <a type="button" class="btn btn-success btn-xs"
+                       href="{% url 'web:wiki_add' request.tracer.project.id %}">
+                        <i class="fa fa-plus-circle" aria-hidden="true"></i>新建
+                    </a>
+
+                </div>
+            </div>
+            <div class="panel-body">
+                {#目录#}
+                <div class="col-lg-3 title-list">目录
+                    <ul id="catalog">
+
+                    </ul>
+                </div>
+                <div class="col-lg-9 content">
+                    <form method="post">
+                        {% csrf_token %}
+                        {% for field in form %}
+                            {% if field.name == 'content' %}
+                                <div class="form-group">
+                                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                    <div id='editor'>
+                                        {{ field }}
+                                    </div>
+                                    <span class="error-msg">{{ field.errors.0 }}</span>
+                                </div>
+                            {% else %}
+                                <div class="form-group">
+                                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                    {{ field }}
+                                    <span class="error-msg">{{ field.errors.0 }}</span>
+                                </div>
+                            {% endif %}
+
+
+                        {% endfor %}
+                        <button type="submit" class="btn btn-primary">提 交</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block js %}
+    <script src="{% static 'plugin/editor-md/editormd.min.js' %}"></script>
+    <script src="{% static 'plugin/editor-md/editormd.amd.min.js' %}"></script>
+
+    <script>
+
+        let WIKI_DETAIL_URL = "{% url 'web:wiki' request.tracer.project.id %}";
+        let WIKI_UPLOAD_URL = "{% url 'web:wiki_upload' request.tracer.project.id  %}";
+        $(function () {
+
+            initCatalog();
+            initEditorMd();
+
+        });
+        {# 初始化markdown 编辑器#}
+
+
+        function initEditorMd() {
+            editor = editormd('editor', {
+                placeholder: "请输入内容",
+                height: 500,
+                path: "{% static 'plugin/editor-md/lib/' %}",
+                imageUpload: true,
+                imageFormats: ["jpg", 'jpeg', 'png', 'gif'],
+                imageUploadURL: WIKI_UPLOAD_URL,
+            })
+        }
+
+
+        //粘贴上传到后台
+        function sendImageToBackend(file) {
+            var formData = new FormData();
+
+            formData.append('editormd-image-file', file);
+
+            fetch(WIKI_UPLOAD_URL, {
+                method: 'POST',
+                body: formData
+            }).then(function (res) {
+                //console.log('pic')
+                //console.log(res)
+               return  res.json()
+            }).then(function (data_last) {
+                    console.log(data_last)
+                    if (data_last.success){
+                        editor.insertValue('![](' +data_last.url +')')
+                    }
+                    else {
+                        alert(data_last.message)
+                    }
+                }
+            ).catch(function (error) {
+                console.error('Error:', error);
+            });
+
+        }
+
+        //创建节点
+        function create_node(name) {
+            // 创建外层 <div> 元素
+            var outerDiv = document.createElement('div');
+            outerDiv.className = 'CodeMirror-activeline';
+            outerDiv.style.position = 'relative';
+
+// 创建活动行背景的 <div> 元素
+            var activelineBackgroundDiv = document.createElement('div');
+            activelineBackgroundDiv.className = 'CodeMirror-activeline-background CodeMirror-linebackground';
+
+            outerDiv.appendChild(activelineBackgroundDiv);
+
+// 创建包含行号的 <div> 元素
+            var gutterDivWrapper = document.createElement('div');
+            gutterDivWrapper.className = 'CodeMirror-gutter-wrapper';
+
+            var lineNumberDiv = document.createElement('div');
+            lineNumberDiv.className = 'CodeMirror-linenumber CodeMirror-gutter-elt';
+
+            gutterDivWrapper.appendChild(lineNumberDiv);
+            outerDiv.appendChild(gutterDivWrapper);
+
+            // 创建 <pre> 元素
+            var preElement = document.createElement('pre');
+            preElement.className = '';
+
+            var spanElement = document.createElement('span');
+            spanElement.style.paddingRight = '0.1px';
+
+            var innerSpanElement = document.createElement('span');
+            innerSpanElement.className = 'cm-cm-overlay cm-matchhighlight';
+            innerSpanElement.textContent = name;
+
+            spanElement.appendChild(innerSpanElement);
+            preElement.appendChild(spanElement);
+
+            outerDiv.appendChild(preElement);
+
+            return outerDiv
+
+
+        }
+
+        //粘贴
+        //let text_area = document.querySelector('textarea')
+        editor.addEventListener('paste', function (event) {
+
+            event.preventDefault();
+            var data = event.clipboardData || window.clipboardData;
+            console.log(data)
+            var file = data.items[0].getAsFile();
+
+            if (file) {
+                console.log('file', file)
+                console.log('file', file.name)
+                sendImageToBackend(file)
+            } else {
+                data.items[0].getAsString(function (text) {
+                    //console.log("Pasted text:11111", text);
+                    editor.insertValue(text)
+
+                })
+            }
+
+            //sendImageToBackend(file);
+
+
+        })
+
+
+        function initCatalog() {
+            $.ajax({
+
+                url: '{% url "web:wiki_catalog" request.tracer.project.id %}',
+                type: 'GET',
+                dataType: 'JSON',
+                success: function (res) {
+                    if (res.status) {
+                        $.each(res.data, function (index, item) {
+                            //console.log(index,item)
+                            let href = WIKI_DETAIL_URL + "?wiki_id=" + item.id;
+                            let li = $("<li>").attr('id', 'id_' + item.id).append($("<a>").text(item.title).attr('href', href)).append($('<ul>'));
+                            if (!item.parent_id) {
+                                $('#catalog').append(li)
+                            } else {
+                                $('#' + 'id_' + item.parent_id).children().append(li)
+                            }
+                        })
+
+                    } else {
+                        alert('初始化失败')
+                    }
+                }
+            })
+        }
+
+    </script>
+{% endblock %}
