@@ -95,8 +95,9 @@ def file_delete(request, project_id):
                 # 文件总和
                 total_size += child.file_size
                 # 删除文件
-                key_list.append({"key": child.key})
+                key_list.append({"Key": child.key})
 
+    print(key_list)
     # 删除文件
     if key_list:
         delete_file_list(request.tracer.project.bucket, request.tracer.project.region, key_list)
@@ -181,7 +182,7 @@ def file_post(request, project_id):
             'file_size': instance.file_size,
             'username': instance.update_user.username,
             'datetime': instance.update_datetime,
-            'download_url': reverse('file_download', kwargs={"project_id": project_id, 'file_id': instance.id})
+            'download_url': reverse('web:file_download', kwargs={"project_id": project_id, 'file_id': instance.id})
             # 'file_type': instance.get_file_type_display()
         }
         return JsonResponse({'status': True, 'data': result})

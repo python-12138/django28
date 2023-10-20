@@ -145,7 +145,7 @@
             <div class="panel-heading"><i class="fa fa-handshake-o" aria-hidden="true"></i> 我加入的项目</div>
             <div class="panel-body">
                 {% for item in project_dict.join %}
-                    <div class="item"><a href="" class="title"
+                    <div class="item"><a href="{% url 'web:dashboard' item.id %}" class="title"
                                          style="background-color: {{ item.get_color_display }};">{{ item.name }} </a>
                         <div class="info">
                             <div>

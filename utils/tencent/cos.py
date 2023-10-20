@@ -52,7 +52,7 @@ def upload_file(bucket, region, file_object, key):
 
 
 def delete_file(bucket, region, key):
-    config = CosConfig(Region=region, SecretId=settings.TENCENT_COS_ID, SecretKey=settings.TENCENT_COS_KEY)
+    config = CosConfig(Region=region, SecretId=settings.TENCENT_COS_ID, SecretKey=settings.TENCENT_COS_KEY,)
     client = CosS3Client(config)
 
     client.delete_object(
@@ -74,8 +74,10 @@ def check_file(bucket, region, key):
 
 
 def delete_file_list(bucket, region, key_list):
+
     config = CosConfig(Region=region, SecretId=settings.TENCENT_COS_ID, SecretKey=settings.TENCENT_COS_KEY)
     client = CosS3Client(config)
+
     objects = {
         "Quiet": "true",
         "Object": key_list

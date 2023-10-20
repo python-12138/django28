@@ -7,4 +7,6 @@ urlpatterns = [
     path('register/', register),
     path('redis_index/', redis_index),
     path('redis_test/', return_test),
+    path('datatest/', date_test),
+    path('dictlist/', dictlist),
 ]

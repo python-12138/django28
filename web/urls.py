@@ -1,11 +1,14 @@
 from django.conf import settings
 from django.conf.urls.static import static
-from django.urls import include, re_path
+from django.shortcuts import redirect, reverse
+from django.urls import include, re_path, path
+from django.views.static import serve
 
-from web.views import account, project, manage, wiki, file, viewsetting,issues
+from web.views import account, project, statistics, wiki, file, viewsetting, issues, dashboard
 from web.views import home
 
 urlpatterns = [
+                  path('', lambda request: redirect(reverse('web:index')), name='root'),
 
                   re_path(r'^register/$', account.register, name='register'),
                   re_path(r'^send/sms/$', account.send_sms, name='send_sms'),
@@ -24,9 +27,6 @@ urlpatterns = [
 
                   # 项目管理
                   re_path(r'^manage/(?P<project_id>\d+)/', include([
-                      re_path(r'^dashboard/$', manage.dashboard, name='dashboard'),
-
-                      re_path(r'^statistics/$', manage.statistics, name='statistics'),
 
                       re_path(r'^wiki/$', wiki.wiki, name='wiki'),
                       re_path(r'^wiki/add/$', wiki.wiki_add, name='wiki_add'),
@@ -47,7 +47,22 @@ urlpatterns = [
                       re_path(r'^setting/delete/$', viewsetting.setting_delete, name='settingdelete'),
 
                       re_path(r'^issues/$', issues.issues, name='issues'),
+                      # \d+放在括号内
+                      re_path(r'^issues/detail/(?P<issues_id>\d+)/$', issues.issues_detail, name='issues_detail'),
+                      re_path(r'^issues/record/(?P<issues_id>\d+)/$', issues.issues_record, name='issues_record'),
+                      re_path(r'^issues/change/(?P<issues_id>\d+)/$', issues.issues_change, name='issues_change'),
+                      re_path(r'^issues/invite/url/$', issues.invite_url, name='invite_url'),
+
+                      # 面板
+                      re_path(r'^dashboard/$', dashboard.dashboard, name='dashboard'),
+                      re_path(r'^dashboard/issues/chart/$', dashboard.issueschart, name='issueschart'),
+
+                      # 统计
+                      re_path(r'^statistics/$', statistics.statistics, name='statistics'),
 
                   ])),
 
-              ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+                  re_path(r'^invite/join/(?P<code>\w+)/$', issues.invite_join, name='invite_join'),
+                  re_path(r'^media/(?P<path>.*)$', serve, {"document_root": settings.MEDIA_ROOT}),
+
+              ] + static(settings.STATIC_URL, document_root=settings.STATICFILES_DIRS)

@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-e79+e_)2v&t1t0kt6lt0g&$bno5=#sxzu0!d=jvn^w#eyyo+tw
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'app01',
     'ajax01',
     'web.apps.WebConfig',
+
 ]
 
 MIDDLEWARE = [
@@ -108,13 +109,17 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'zh-hans'
 
+
+#TIME_ZONE = 'Africa/Accra'
 TIME_ZONE = 'Asia/Shanghai'
-
+#TIME_ZONE = 'UTC'
 USE_I18N = True
-
-USE_TZ = True
+#影响自动生成数据库时间字段
+#USE_TZ = True   创建utc时间写入到数据库
+#USE_TZ = False  创建TIME_ZONE时间写入到数据库
+USE_TZ = False
 
 
 # Static files (CSS, JavaScript, Images)
@@ -124,12 +129,12 @@ STATIC_URL = 'static/'
 
 
 MEDIA_ROOT = os.path.join(BASE_DIR,'media/')
-MEDIA_URL = 'media/'
+MEDIA_URL = '/media/'
 
+#设置目录可以让web 浏览器访问到
 STATICFILES_DIRS = [
-
     os.path.join(BASE_DIR,'static'),
-
+    os.path.join(BASE_DIR,'web'),
 ]
 
 
@@ -139,6 +144,7 @@ STATICFILES_DIRS = [
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 SMS=0
 
+#腾讯短信配置
 TENCENT_SMS_APP_ID = 666 #settings.TENCENT_SMS_APP_ID
 TENCENT_SMS_APP_KEY = '6666666' #settings.TENCENT_SMS_APP_KEY
 TENCENT_SMS_SIGN = None#settings.TENCENT_SMS_SIGN
@@ -167,13 +173,14 @@ WHITE_REGEX_URL_LIST = [
     "/login/sms/",
     "/image/code/",
     "/index/",
-
 ]
 
 TENCENT_COS_ID='...'
 TENCENT_COS_KEY='...'
 
 X_FRAME_OPTIONS='SAMEORIGIN'
+
+
 
 try:
     from .local_settings import *

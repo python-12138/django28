@@ -1,11 +1,8 @@
 import time
-
 from django.http import JsonResponse
 from django.shortcuts import render, HttpResponse, redirect, reverse
-
 from web import models
 from web.forms.project import ProjectModelForm
-
 from utils.tencent.cos import create_bucket
 
 def project_list(request):
@@ -38,6 +35,7 @@ def project_list(request):
         form = ProjectModelForm(request)
         return render(request, 'project_list.html', {"form": form, "project_dict": project_dict})
     form = ProjectModelForm(request, request.POST)
+    #验证通过创建项目
     if form.is_valid():
 
         bucket = "{}-{}-1304077854".format(request.tracer.user.mobile_phone,str(int(time.time())))
@@ -48,7 +46,14 @@ def project_list(request):
 
         form.instance.creator = request.tracer.user
 
-        form.save()
+        instance=form.save()
+        #创建每个项目默认的问题类型
+        issues_type_project_list = []
+        for item in models.IssuesType.PROJECT_INIT_LIST:
+            issues_type_project_list.append(models.IssuesType(project=instance,title=item))
+
+        models.IssuesType.objects.bulk_create(issues_type_project_list)
+
         return JsonResponse({'status': True})
 
     return JsonResponse({'status': False, 'error': form.errors})
