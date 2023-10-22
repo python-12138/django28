@@ -6,14 +6,37 @@
 {% endblock %}
 
 {% block ccontent %}
-    <div class="container-fluid" style="margin-top: 20px; margin-left: 20px;">
+    <div class="container-fluid" style="margin-top: 20px; margin-left: 20px; margin-right: 20px">
+
         <div>
             <div class="input-group" style="width: 300px;">
                 <span class="input-group-addon">日期范围</span>
                 <input id="rangePicker" type="text" class="form-control">
             </div>
         </div>
+        <div class="row" style="margin-top: 20px;">
+            <div class="col-md-8">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <i class="fa fa-bar-chart" aria-hidden="true"></i> 人员工作进度
+                    </div>
+                    <div class="panel-body">
+                        <div id="projectUser" style="height: 300px;"></div>
+                    </div>
+                </div>
 
+            </div>
+            <div class="col-md-4">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <i class="fa fa-pie-chart" aria-hidden="true"></i> 优先级统计
+                    </div>
+                    <div class="panel-body">
+                        <div id="priority" style="height: 300px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 {% endblock %}
 
@@ -21,11 +44,18 @@
 
     <script src="{% static 'plugin/daterangepicker/moment.min.js' %}"></script>
     <script src="{% static 'plugin/daterangepicker/daterangepicker.js' %}"></script>
-
+    <script src="{% static 'plugin/highcharts/highcharts.js' %}"></script>
 
     <script>
+
+        let PRIORITY_API = '{% url "web:statisticspriority" request.tracer.project.id %}'
+        let PROJECT_USER_API = '{% url "web:statisticsprojectuser" request.tracer.project.id %}'
+
+
         $(function () {
             initDateRangePicker();
+            priority(moment().format('YYYY-MM-DD'), moment().add(1, 'days').format('YYYY-MM-DD'));
+            projectUser(moment().format('YYYY-MM-DD'), moment().add(1, 'days').format('YYYY-MM-DD'));
         });
 
         function initDateRangePicker() {
@@ -56,7 +86,144 @@
             };
             $('#rangePicker').daterangepicker(options, function (start, end, lable) {
                 //选择时间后，函数自动触发
+                priority(start.format('YYYY-MM-DD'), end.add(1, 'days').format('YYYY-MM-DD'))
+                projectUser(start.format('YYYY-MM-DD'), end.add(1, 'days').format('YYYY-MM-DD'));
             });
+        }
+
+
+        function priority(start, end) {
+            var config = {
+                chart: {
+                    type: 'pie'
+                },
+                title: {
+                    text: null
+                },
+                credits: {
+                    enabled: false // 关闭版权信息
+                },
+                tooltip: {
+                    pointFormat: '{series.name}: <b>{point.y}</b>'
+                },
+                plotOptions: {
+                    pie: {
+                        allowPointSelect: true,
+                        cursor: 'pointer',
+                        dataLabels: {
+                            enabled: false
+                        },
+                        showInLegend: true
+                    }
+                },
+                series: [{
+                    name: '优先级',
+                    colorByPoint: true,
+                    data: []
+                }]
+            };
+            $.ajax({
+                url: PRIORITY_API,
+                type: "GET",
+                data: {start: start, end: end},
+                dataType: "JSON",
+                success: function (res) {
+
+                    config.series[0].data = res.data;
+
+                    console.log(config.series[0].data)
+                    console.log(res.data[0])
+                    Highcharts.chart('priority', config);
+
+                }
+            })
+        }
+
+
+        function projectUser(start, end) {
+            var config = {
+                chart: {
+                    type: 'column'
+                },
+                title: {
+                    text: '堆叠柱形图'
+                },
+                xAxis: {
+                    categories: []
+                },
+                yAxis: {
+                    min: 0,
+                    title: {
+                        text: '水果消费总量'
+                    },
+                    stackLabels: {  // 堆叠数据标签
+                        enabled: true,
+                        style: {
+                            fontWeight: 'bold',
+                            color: (Highcharts.theme && Highcharts.theme.textColor) || 'gray'
+                        }
+                    }
+                },
+                legend: {
+                    align: 'right',
+                    x: -30,
+                    verticalAlign: 'top',
+                    y: 25,
+                    floating: true,
+                    backgroundColor: (Highcharts.theme && Highcharts.theme.background2) || 'white',
+                    borderColor: '#CCC',
+                    borderWidth: 1,
+                    shadow: false
+                },
+                tooltip: {
+                    formatter: function () {
+                        return '<b>' + this.x + '</b><br/>' +
+                            this.series.name + ': ' + this.y + '<br/>' +
+                            '总量: ' + this.point.stackTotal;
+                    }
+                },
+                plotOptions: {
+                    column: {
+                        stacking: 'normal',
+                        dataLabels: {
+                            enabled: true,
+                            color: (Highcharts.theme && Highcharts.theme.dataLabelsColor) || 'white',
+                            style: {
+                                // 如果不需要数据标签阴影，可以将 textOutline 设置为 'none'
+                                textOutline: '1px 1px black'
+                            }
+                        }
+                    }
+                },
+                series: []
+            }
+            /*$.ajax({
+                url: PROJECT_USER_API,
+                type: 'GET',
+                data: {
+                    start: start,
+                    end: end,
+                },
+                dataType: JSON,
+                success: function (res) {
+                    config.xAxis.categories = res.data.categories
+                    config.series = res.data.series
+                    var chart = Highcharts.chart('projectUser', config);
+                }
+            })*/
+            $.ajax({
+                url: PROJECT_USER_API,
+                type: "GET",
+                data: {start: start, end: end},
+                dataType: "JSON",
+                success: function (res) {
+                    console.log(res)
+                    config.xAxis.categories = res.data.categories;
+                    config.series = res.data.series
+                    Highcharts.chart('projectUser', config);
+
+                }
+            })
         }
     </script>
 {% endblock %}

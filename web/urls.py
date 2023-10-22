@@ -18,6 +18,13 @@ urlpatterns = [
                   re_path(r'^index/$', home.index, name='index'),
                   re_path(r'^logout/$', home.logout, name='logout'),
 
+                  #价格
+                  re_path(r'^price/$', home.price, name='price'),
+                  re_path(r'^payment/(?P<policy_id>\d+)/$', home.payment, name='payment'),
+                  re_path(r'^pay/$', home.pay, name='pay'),
+                  re_path(r'^pay/notify/$', home.paynotify, name='paynotify'),
+
+
                   # 项目列表
                   re_path(r'^project/list/$', project.project_list, name='project_list'),
                   re_path(r'^project/star/(?P<project_type>\w+)/(?P<project_id>\d+)/$', project.project_star,
@@ -59,6 +66,8 @@ urlpatterns = [
 
                       # 统计
                       re_path(r'^statistics/$', statistics.statistics, name='statistics'),
+                      re_path(r'^statistics/priority/$', statistics.statistics_priority, name='statisticspriority'),
+                      re_path(r'^statistics/projectuser/$', statistics.statistics_projectuser, name='statisticsprojectuser'),
 
                   ])),
 

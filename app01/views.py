@@ -8,6 +8,7 @@ from django.utils import timezone
 from django_redis import get_redis_connection
 
 from app01 import models
+from app01.form.UserForm import UserForm
 from utils.tencent.sms import send_sms_single
 
 
@@ -71,8 +72,6 @@ def return_test(request):
 
 
 def date_test(request):
-
-
     dl = datetime.datetime.now()
 
     da = timezone.now()
@@ -89,15 +88,30 @@ def date_test(request):
         'dsdate': dsdate
     }
 
-    return render(request,'timehtml.html',context)
+    return render(request, 'timehtml.html', context)
 
 
 def dictlist(request):
-
-    context={
+    context = {
         'list': ['wupeiqi', '18'],
-        'dict':{'name':'wupeiqi','age':18},
+        'dict': {'name': 'wupeiqi', 'age': 18},
 
-        'listdict':[{'name':'wupeiqi','age':18},{'name':'wupeiqi','age':18}]
+        'listdict': [{'name': 'wupeiqi', 'age': 18}, {'name': 'wupeiqi', 'age': 18}]
     }
-    return render(request,'dictlist.html',context=context)
+    return render(request, 'dictlist.html', context=context)
+
+
+def form_test(request):
+    if request.method == 'GET':
+        form = UserForm()
+        return render(request, 'form_test.html', {'form': form})
+
+    if request.method == 'POST':
+        form = UserForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return HttpResponse('ok')
+        else:
+            return render(request, 'form_test.html', {'form': form})
+    else:
+        return HttpResponse('error')

@@ -129,12 +129,12 @@ STATIC_URL = 'static/'
 
 
 MEDIA_ROOT = os.path.join(BASE_DIR,'media/')
-MEDIA_URL = '/media/'
+MEDIA_URL = 'media/'
 
 #设置目录可以让web 浏览器访问到
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR,'static'),
-    os.path.join(BASE_DIR,'web'),
+
 ]
 
 
@@ -173,6 +173,7 @@ WHITE_REGEX_URL_LIST = [
     "/login/sms/",
     "/image/code/",
     "/index/",
+    "/price/",
 ]
 
 TENCENT_COS_ID='...'

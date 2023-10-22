@@ -9,4 +9,5 @@ urlpatterns = [
     path('redis_test/', return_test),
     path('datatest/', date_test),
     path('dictlist/', dictlist),
+    path('formtest/', form_test),
 ]
